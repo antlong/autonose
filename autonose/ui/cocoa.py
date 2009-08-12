@@ -19,6 +19,7 @@ from cocoa_util.scroll_keeper import ScrollKeeper
 from cocoa_util.file_openers import all_openers
 
 VOID = "v@:"
+VOID_WITH_ONE_ARG = "v@:@"
 
 log = logging.getLogger(__name__)
 debug = log.debug
@@ -57,7 +58,7 @@ class AutonoseApp(NSObject):
 		window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
 			NSMakeRect(*(origin + size)), window_mask, NSBackingStoreBuffered, True)
 		window.setTitle_("Autonose")
-		self.doUpdate("<h1>loading...</h1>")
+		self.doUpdate_("<h1>loading...</h1>")
 		
 		window.contentView().addSubview_(self.view)
 		window.makeKeyAndOrderFront_(None)
@@ -65,9 +66,9 @@ class AutonoseApp(NSObject):
 		try:
 			self.app.run()
 		except KeyboardInterrupt:
-			self.doExit()
+			self.doExit_(None)
 	
-	def doExit(self, *args):
+	def doExit_(self, _ignored):
 		self.runner = None # when doExit() is called, the main runner is already ending
 		self.app.terminate_(self)
 	
@@ -75,7 +76,7 @@ class AutonoseApp(NSObject):
 		if self.runner:
 			self.runner.terminate()
 	
-	def doUpdate(self, page=None):
+	def doUpdate_(self, page=None):
 		if page is None:
 			page = self.mainLoop.page
 		if self.scroll_keeper: self.scroll_keeper.save()
@@ -113,14 +114,14 @@ class App(object):
 		self.app.run()
 	
 	def exit(self):
-		self.do(self.app.doExit)
+		self.do(self.app.doExit_)
 	
 	def do(self, func, arg=None):
-		sel = objc.selector(func, signature=VOID)
+		sel = objc.selector(func, signature=VOID_WITH_ONE_ARG)
 		self.app.performSelectorOnMainThread_withObject_waitUntilDone_(sel, arg, False)
 	
 	def update(self, page=None):
-		self.do(self.app.doUpdate, str(page))
+		self.do(self.app.doUpdate_, str(page))
 
 if __name__ == '__main__':
 	from shared.launcher import Launcher
