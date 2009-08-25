@@ -13,6 +13,7 @@ class Launcher(object):
 	def __init__(self, nose_args, script_file):
 		self.ui_proc = self.fork(script_file)
 		Data.realStream = self.ui_proc.stream
+		Data.ui_pid = self.ui_proc.pid
 		self.setup_args(nose_args)
 		self.addplugins = self.nosexml_plugin()
 	

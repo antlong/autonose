@@ -69,10 +69,34 @@ class Data(object):
 	def endElement(self, name=None):
 		parent = self.current.parent
 		if parent is self.root:
-			self.stream.write(self.encode(self.current))
+			self._write_line(self.encode(self.current))
+		self.current = parent
+	
+	def _write_line(self, line):
+		try:
+			self.stream.write(line)
 			self.stream.write('\n')
 			self.stream.flush()
-		self.current = parent
+		except IOError, e:
+			# we can't be sure that sys.stdout/stderr work
+			# at all, so we'll just write to a darn file
+			import sys, subprocess, os, traceback
+			error_file = open("/tmp/autonose-error","w")
+			traceback.print_exc(file=error_file)
+			error_file.write("\n")
+			error_file.write("Note: this is the RUNNER pid (%s)\n" % (os.getpid(),))
+			error_file.write("sys.stdout = %r\n" % (sys.stdout,))
+			error_file.write("sys.stderr = %r\n" % (sys.stderr,))
+			error_file.write("my (output) pipe = %r\n" % (self.stream,))
+			error_file.write("realstream = %r\n" % (self.realStream,))
+			error_file.write("UI PID = %s\n" % (type(self).ui_pid,))
+			psout = subprocess.Popen(["ps"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+			#psout = "\n".join([l for l in psout.splitlines() if str(type(self).ui_pid) in l])
+			error_file.write("PS output:\n%s\n" % (psout))
+
+			error_file.close()
+			raise
+
 
 	def characters(self,content):
 		if content:
