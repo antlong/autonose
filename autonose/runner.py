@@ -36,7 +36,7 @@ class Main(object):
 		parser.add_option('--info', action="store_true", default=False, help='show more info about what files have changed')
 		
 		# UI
-		parser.add_option('--console', action="store_true", default=False, help='use the console interface (no GUI)')
+		parser.add_option('--console', action="store_true", default=True, help='use the console interface (no GUI)')
 
 		# nose options
 		parser.add_option('--config', default=None, help='nosetests config file')
